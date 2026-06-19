@@ -5,13 +5,14 @@ services:
       context: .
     ports:
       - "8000:8000"
-    command: ["sh", "-c", "./wait-for-it.sh cityops_db:5432 -- ./start.sh"]
+    command: ["sh", "-c", "./wait-for-it.sh cityops_db:5432 --strict --timeout=60 -- ./start.sh"]
     volumes:
         - .:/app
     env_file:
       - .env
     depends_on:
-      - cityops_db
+      cityops_db:
+        condition: service_healthy
 
   cityops_db:
     container_name: database
@@ -24,6 +25,11 @@ services:
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   cityops_db_data:
