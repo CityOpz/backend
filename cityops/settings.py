@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "apps.users.apps.UsersConfig",
+    "apps.reports.apps.ReportsConfig",
     "drf_spectacular",
 ]
 
