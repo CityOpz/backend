@@ -2,6 +2,7 @@ import pytest
 
 from users.models import User
 
+
 @pytest.mark.django_db
 def test_register_user_success(client):
 
@@ -10,27 +11,20 @@ def test_register_user_success(client):
         "email": "test@test.com",
         "first_name": "Juan",
         "last_name": "Perez",
-        "password": "12345678"
+        "password": "12345678",
     }
 
-
     response = client.post(
-        "/api/users/register/",
-        data,
-        content_type="application/json"
+        "/api/users/register/", data, content_type="application/json"
     )
-
 
     assert response.status_code == 201
 
-
-    user = User.objects.get(
-        username="usuario_test"
-    )
-
+    user = User.objects.get(username="usuario_test")
 
     assert user.email == "test@test.com"
     assert user.role == "CITIZEN"
+
 
 @pytest.mark.django_db
 def test_register_duplicate_user(client):
@@ -40,24 +34,23 @@ def test_register_duplicate_user(client):
         first_name="Usuario",
         last_name="Perez",
         email="juan@test.com",
-        password="12345678"
+        password="12345678",
     )
-
 
     response = client.post(
         "/api/users/register/",
         {
-            "username":"juan",
+            "username": "juan",
             "first_name": "Usuario",
             "last_name": "Perez",
-            "email":"juan2@test.com",
-            "password":"12345678"
+            "email": "juan2@test.com",
+            "password": "12345678",
         },
-        content_type="application/json"
+        content_type="application/json",
     )
 
-
     assert response.status_code == 400
+
 
 @pytest.mark.django_db
 def test_register_duplicate_email(client):
@@ -67,24 +60,23 @@ def test_register_duplicate_email(client):
         first_name="Usuario",
         last_name="Perez",
         email="correo@gmail.com",
-        password="12345678"
+        password="12345678",
     )
-
 
     response = client.post(
         "/api/users/register/",
         {
-            "username":"pedro",
+            "username": "pedro",
             "first_name": "Usuario",
             "last_name": "Perez",
-            "email":"correo@gmail.com",
-            "password":"12345678"
+            "email": "correo@gmail.com",
+            "password": "12345678",
         },
-        content_type="application/json"
+        content_type="application/json",
     )
 
-
     assert response.status_code == 400
+
 
 @pytest.mark.django_db
 def test_register_cannot_create_admin(client):
@@ -92,26 +84,22 @@ def test_register_cannot_create_admin(client):
     response = client.post(
         "/api/users/register/",
         {
-            "username":"hacker",
-            "email":"hack@gmail.com",
+            "username": "hacker",
+            "email": "hack@gmail.com",
             "first_name": "Usuario",
             "last_name": "Perez",
-            "password":"12345678",
-            "role":"ADMIN"
+            "password": "12345678",
+            "role": "ADMIN",
         },
-        content_type="application/json"
+        content_type="application/json",
     )
-
 
     assert response.status_code == 201
 
-
-    user = User.objects.get(
-        username="hacker"
-    )
-
+    user = User.objects.get(username="hacker")
 
     assert user.role == "CITIZEN"
+
 
 @pytest.mark.django_db
 def test_register_without_password(client):
@@ -121,14 +109,14 @@ def test_register_without_password(client):
         {
             "first_name": "Usuario",
             "last_name": "Perez",
-            "username":"juan",
-            "email":"juan@gmail.com"
+            "username": "juan",
+            "email": "juan@gmail.com",
         },
-        content_type="application/json"
+        content_type="application/json",
     )
 
-
     assert response.status_code == 400
+
 
 @pytest.mark.django_db
 def test_user_created_in_database(client):
@@ -136,16 +124,14 @@ def test_user_created_in_database(client):
     client.post(
         "/api/users/register/",
         {
-            "username":"maria",
+            "username": "maria",
             "first_name": "Usuario",
             "last_name": "Perez",
-            "email":"maria@gmail.com",
-            "password":"12345678"
+            "email": "maria@gmail.com",
+            "password": "12345678",
         },
-        content_type="application/json"
+        content_type="application/json",
     )
 
+    assert User.objects.filter(username="maria").exists()
 
-    assert User.objects.filter(
-        username="maria"
-    ).exists()
