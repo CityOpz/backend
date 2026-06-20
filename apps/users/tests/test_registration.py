@@ -1,6 +1,6 @@
 import pytest
 
-from users.models import User
+from apps.users.models import User
 
 
 @pytest.mark.django_db
@@ -134,4 +134,3 @@ def test_user_created_in_database(client):
     )
 
     assert User.objects.filter(username="maria").exists()
-
