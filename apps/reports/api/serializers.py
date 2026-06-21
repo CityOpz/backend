@@ -2,6 +2,16 @@ from rest_framework import serializers
 from apps.users.models import User
 from apps.reports.models import Category, Report
 from django.contrib.gis.geos import Point
+from pathlib import Path
+
+
+MAX_PHOTO_SIZE_MB = 5
+ALLOWED_PHOTO_EXTENSIONS = {".jpg", ".jpeg", ".png", "webp"}
+ALLOWED_PHOTO_CONTENT_TYPES = {
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+}
 
 
 class ReportCreatorSerializer(serializers.ModelSerializer):
@@ -50,6 +60,33 @@ class ReportSerializer(serializers.ModelSerializer):
             "created_by",
         ]
         read_only_fields = ["id", "status", "created_at", "updated_at", "created_by"]
+
+    def validate_photo(self, photo):
+        if photo is None:
+            return photo
+
+        max_size_bytes = MAX_PHOTO_SIZE_MB * 1024 * 1024
+
+        if photo.size > max_size_bytes:
+            raise serializers.ValidationError(
+                f"The image size cannot exceed {MAX_PHOTO_SIZE_MB} MB."
+            )
+
+        extension = Path(photo.name).suffix.lower()
+
+        if extension not in ALLOWED_PHOTO_EXTENSIONS:
+            raise serializers.ValidationError(
+                "Invalid image extension. Allowed extensions are: jpg, jpeg, png and webp."
+            )
+
+        content_type = getattr(photo, "content_type", None)
+
+        if content_type not in ALLOWED_PHOTO_CONTENT_TYPES:
+            raise serializers.ValidationError(
+                "Invalid image type. Allowed image types are: JPEG, PNG and WEBP."
+            )
+
+        return photo
 
     def create(self, validated_data):
         """
