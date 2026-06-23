@@ -36,7 +36,7 @@ jobs:
       
       - name: Run backend tests with coverage
         run: |
-          docker compose -f docker-compose.yml run --rm --user "(id -u):(id -g)" web pytest --cov=apps --cov-report=xml --cov-report=term-missing
+          docker compose -f docker-compose.yml run --rm --user "$(id -u):$(id -g)" web pytest --cov=apps --cov-report=xml --cov-report=term-missing
 
       - name: Check coverage file
         run: |
