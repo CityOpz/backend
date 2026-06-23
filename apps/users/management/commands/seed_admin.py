@@ -21,9 +21,9 @@ class Command(BaseCommand):
             )
             return
 
-        User = get_user_model()
+        user_model = get_user_model()
 
-        user, created = User.objects.get_or_create(
+        user, created = user_model.objects.get_or_create(
             username=username,
             defaults={"email": email, "role": role, "is_active": True},
         )
