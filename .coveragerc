@@ -1,0 +1,12 @@
+[run]
+source =
+    apps
+relative_files = True
+
+[report]
+omit =
+    */migrations/*
+    */tests/*
+    */admin.py
+    */apps.py
+    */__init__.py

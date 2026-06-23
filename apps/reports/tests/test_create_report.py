@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.reports.models import Category, Report
+from apps.users.tests.conftest import make_test_password
 
 
 pytestmark = pytest.mark.django_db
@@ -24,7 +25,7 @@ def user():
     return User.objects.create_user(
         username="citizen_user",
         email="citizen@example.com",
-        password="StrongPassword123!",
+        password=make_test_password(),
         first_name="Citizen",
         last_name="User",
     )

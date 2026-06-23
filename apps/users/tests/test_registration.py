@@ -1,6 +1,10 @@
 import pytest
 
 from apps.users.models import User
+from apps.users.tests.conftest import make_test_password
+
+
+TEST_PASSWORD = make_test_password()
 
 
 @pytest.mark.django_db
@@ -11,7 +15,7 @@ def test_register_user_success(client):
         "email": "test@test.com",
         "first_name": "Juan",
         "last_name": "Perez",
-        "password": "12345678",
+        "password": TEST_PASSWORD,
     }
 
     response = client.post(
@@ -34,7 +38,7 @@ def test_register_duplicate_user(client):
         first_name="Usuario",
         last_name="Perez",
         email="juan@test.com",
-        password="12345678",
+        password=TEST_PASSWORD,
     )
 
     response = client.post(
@@ -44,7 +48,7 @@ def test_register_duplicate_user(client):
             "first_name": "Usuario",
             "last_name": "Perez",
             "email": "juan2@test.com",
-            "password": "12345678",
+            "password": TEST_PASSWORD,
         },
         content_type="application/json",
     )
@@ -60,7 +64,7 @@ def test_register_duplicate_email(client):
         first_name="Usuario",
         last_name="Perez",
         email="correo@gmail.com",
-        password="12345678",
+        password=TEST_PASSWORD,
     )
 
     response = client.post(
@@ -70,7 +74,7 @@ def test_register_duplicate_email(client):
             "first_name": "Usuario",
             "last_name": "Perez",
             "email": "correo@gmail.com",
-            "password": "12345678",
+            "password": make_test_password(),
         },
         content_type="application/json",
     )
@@ -88,7 +92,7 @@ def test_register_cannot_create_admin(client):
             "email": "hack@gmail.com",
             "first_name": "Usuario",
             "last_name": "Perez",
-            "password": "12345678",
+            "password": TEST_PASSWORD,
             "role": "ADMIN",
         },
         content_type="application/json",
@@ -128,7 +132,7 @@ def test_user_created_in_database(client):
             "first_name": "Usuario",
             "last_name": "Perez",
             "email": "maria@gmail.com",
-            "password": "12345678",
+            "password": TEST_PASSWORD,
         },
         content_type="application/json",
     )
