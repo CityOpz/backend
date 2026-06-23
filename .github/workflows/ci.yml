@@ -36,7 +36,11 @@ jobs:
       
       - name: Run backend tests with coverage
         run: |
-          docker compose -f docker-compose.yml run --rm web pytest --cov=apps --cov-report=xml --cov-report=term-missing
+          docker compose -f docker-compose.yml run --rm --user "(id -u):(id -g)" web pytest --cov=apps --cov-report=xml --cov-report=term-missing
+
+      - name: Check coverage file
+        run: |
+          ls -la coverage.xml 
 
       - name: SonarQube Cloud Scan 
         uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
