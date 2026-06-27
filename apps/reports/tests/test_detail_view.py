@@ -4,9 +4,11 @@ from django.contrib.gis.geos import Point
 from rest_framework.test import APIClient
 
 from apps.reports.models import Report, Category
+from apps.users.tests.conftest import make_test_password
 
 User = get_user_model()
 
+TEST_PASSWORD = make_test_password()
 
 # =========================
 # CLIENT
@@ -34,7 +36,7 @@ def authenticated_client(client, user):
 def user(db):
     return User.objects.create_user(
         username="user",
-        password="pass",
+        password=TEST_PASSWORD,
         role="CITIZEN"
     )
 
@@ -43,7 +45,7 @@ def user(db):
 def admin_user(db):
     return User.objects.create_user(
         username="admin",
-        password="pass",
+        password=TEST_PASSWORD,
         role="ADMIN"
     )
 
@@ -52,7 +54,7 @@ def admin_user(db):
 def citizen_user(db):
     return User.objects.create_user(
         username="citizen",
-        password="pass",
+        password=TEST_PASSWORD,
         role="CITIZEN"
     )
 
@@ -116,7 +118,7 @@ def test_report_list_order(authenticated_client, reports_factory):
 def test_citizen_cannot_see_others_report(client, citizen_user, report_factory):
     other_user = citizen_user.__class__.objects.create_user(
         username="other",
-        password="pass",
+        password=TEST_PASSWORD,
         role="CITIZEN"
     )
 
