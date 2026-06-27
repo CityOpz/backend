@@ -120,3 +120,37 @@ class ReportStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ["status"]
+
+class ReportListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = [
+            "id",
+            "title",
+            "detail",
+            "status",
+        ]
+
+class ReportCitizenUpdateSerializer(serializers.ModelSerializer):
+    latitude = serializers.FloatField(write_only=True)
+    longitude = serializers.FloatField(write_only=True)
+    class Meta:
+        model = Report
+        fields = [
+            "title",
+            "detail",
+            "photo",
+            "latitude",
+            "longitude",
+            "category",
+            ]
+    def create(self, validated_data):
+        """
+        Override the create method to handle the latitude and longitude fields and convert them into a Point object.
+        """
+        latitude = validated_data.pop("latitude")
+        longitude = validated_data.pop("longitude")
+
+        validated_data["location"] = Point(longitude, latitude, srid=4326)
+
+        return super().create(validated_data)
