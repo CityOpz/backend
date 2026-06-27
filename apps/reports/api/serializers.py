@@ -144,6 +144,15 @@ class ReportCitizenUpdateSerializer(serializers.ModelSerializer):
             "longitude",
             "category",
             ]
+
+    def validate(self, attrs):
+        if "status" in self.initial_data:
+            raise serializers.ValidationError({
+                "status": "No puedes modificar el estado del reporte"
+            })
+
+        return attrs
+
     def create(self, validated_data):
         """
         Override the create method to handle the latitude and longitude fields and convert them into a Point object.
