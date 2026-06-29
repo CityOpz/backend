@@ -53,3 +53,31 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ReportStatusHistory(models.Model):
+    """
+    Model to keep track of the status update of the report
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING"
+        IN_REVIEW = "IN_REVIEW"
+        IN_REPAIR = "IN_REPAIR"
+        RESOLVED = "RESOLVED"
+
+    report = models.ForeignKey(
+        "reports.Report", on_delete=models.CASCADE, related_name="status_history"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="status_updates",
+    )
+    new_status = models.CharField(max_length=20, choices=Status.choices)
+    previous_status = models.CharField(max_length=20, choices=Status.choices)
+    update_detail = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]

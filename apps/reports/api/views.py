@@ -4,13 +4,19 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
-from apps.reports.models import Report
+from apps.reports.models import Report, ReportStatusHistory
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from apps.reports.api.serializers import ReportSerializer, ReportStatusUpdateSerializer, ReportListSerializer, ReportCitizenUpdateSerializer
+from apps.reports.api.serializers import (
+    ReportSerializer,
+    ReportStatusUpdateSerializer,
+    ReportListSerializer,
+    ReportCitizenUpdateSerializer,
+)
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.utils import timezone
 from django.db.models import Case, When, Value, IntegerField
+from django.db import transaction
 
 
 class ReportCreateView(generics.CreateAPIView):
@@ -21,7 +27,6 @@ class ReportCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
-
 
 
 class ReportPagination(PageNumberPagination):
@@ -35,8 +40,7 @@ class ReportListView(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            Report.objects
-            .filter(deleted_at__isnull=True)
+            Report.objects.filter(deleted_at__isnull=True)
             .annotate(
                 status_order=Case(
                     When(status="PENDING", then=Value(1)),
@@ -79,12 +83,12 @@ class ReportDetailView(generics.RetrieveDestroyAPIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class ReportUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
-        request=ReportCitizenUpdateSerializer,
-        responses=ReportCitizenUpdateSerializer
+        request=ReportCitizenUpdateSerializer, responses=ReportCitizenUpdateSerializer
     )
     def patch(self, request, pk):
 
@@ -95,21 +99,16 @@ class ReportUpdateView(APIView):
 
         try:
             report = Report.objects.get(
-                pk=pk,
-                deleted_at__isnull=True,
-                created_by=request.user
+                pk=pk, deleted_at__isnull=True, created_by=request.user
             )
 
         except Report.DoesNotExist:
             return Response(
-                {"detail": "Reporte no encontrado."},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "Reporte no encontrado."}, status=status.HTTP_404_NOT_FOUND
             )
 
         serializer = ReportCitizenUpdateSerializer(
-            report,
-            data=request.data,
-            partial=True
+            report, data=request.data, partial=True
         )
 
         serializer.is_valid(raise_exception=True)
@@ -117,13 +116,12 @@ class ReportUpdateView(APIView):
 
         return Response(serializer.data)
 
+
 class ReportStatusUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(
-        request=ReportStatusUpdateSerializer,
-        responses=ReportSerializer
-    )
+    @extend_schema(request=ReportStatusUpdateSerializer, responses=ReportSerializer)
+    @transaction.atomic
     def patch(self, request, pk):
         if getattr(request.user, "role", None) != "ADMIN":
             raise PermissionDenied(
@@ -131,24 +129,33 @@ class ReportStatusUpdateView(APIView):
             )
 
         try:
-            report = Report.objects.get(
-                pk=pk,
-                deleted_at__isnull=True
-            )
+            report = Report.objects.get(pk=pk, deleted_at__isnull=True)
 
         except Report.DoesNotExist:
             return Response(
-                {"detail": "Reporte no encontrado."},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "Reporte no encontrado."}, status=status.HTTP_404_NOT_FOUND
             )
 
+        previous_status = report.status
+
         serializer = ReportStatusUpdateSerializer(
-            report,
-            data=request.data,
-            partial=True
+            report, data=request.data, partial=True
         )
 
         serializer.is_valid(raise_exception=True)
+
+        new_status = serializer.validated_data.get("status")
+        update_detail = serializer.validated_data.get("update_detail")
+
         serializer.save()
 
-        return Response(serializer.data)
+        ReportStatusHistory.objects.create(
+            report=report,
+            updated_by=request.user,
+            new_status=new_status,
+            previous_status=previous_status,
+            update_detail=update_detail,
+        )
+
+        return Response(ReportSerializer(report).data, status=status.HTTP_200_OK)
+

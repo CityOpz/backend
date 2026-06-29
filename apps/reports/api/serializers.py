@@ -117,9 +117,18 @@ class ReportStatusUpdateSerializer(serializers.ModelSerializer):
     Serializer for updating the status of a report. Only the status field is updatable.
     """
 
+    update_detail = serializers.CharField(
+        write_only=True, required=True, allow_blank=False
+    )
+
     class Meta:
         model = Report
-        fields = ["status"]
+        fields = ["status", "update_detail"]
+
+    def update(self, instance, validated_data):
+        validated_data.pop("update_detail", None)
+        return super().update(instance, validated_data)
+
 
 class ReportListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -131,9 +140,11 @@ class ReportListSerializer(serializers.ModelSerializer):
             "status",
         ]
 
+
 class ReportCitizenUpdateSerializer(serializers.ModelSerializer):
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
+
     class Meta:
         model = Report
         fields = [
@@ -143,13 +154,13 @@ class ReportCitizenUpdateSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "category",
-            ]
+        ]
 
     def validate(self, attrs):
         if "status" in self.initial_data:
-            raise serializers.ValidationError({
-                "status": "No puedes modificar el estado del reporte"
-            })
+            raise serializers.ValidationError(
+                {"status": "No puedes modificar el estado del reporte"}
+            )
 
         return attrs
 
@@ -163,3 +174,4 @@ class ReportCitizenUpdateSerializer(serializers.ModelSerializer):
         validated_data["location"] = Point(longitude, latitude, srid=4326)
 
         return super().create(validated_data)
+
