@@ -39,9 +39,11 @@ class ReportListView(generics.ListAPIView):
     pagination_class = ReportPagination
 
     def get_queryset(self):
+        qs = Report.objects.filter(deleted_at__isnull=True)
+        if self.request.query_params.get("my_reports") == "true":
+            qs = qs.filter(created_by=self.request.user)
         return (
-            Report.objects.filter(deleted_at__isnull=True)
-            .annotate(
+            qs.annotate(
                 status_order=Case(
                     When(status="PENDING", then=Value(1)),
                     When(status="IN_REVIEW", then=Value(2)),
