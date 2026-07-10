@@ -29,3 +29,7 @@ RUN chmod 755 /app/wait-for-it.sh /app/start.sh && \
   chmod -R go-w /app
 
 USER appuser
+
+EXPOSE 10000
+
+CMD ["sh", "-c", "./start.sh"]
