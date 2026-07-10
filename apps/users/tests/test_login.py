@@ -8,7 +8,7 @@ from .conftest import make_test_password
 pytestmark = pytest.mark.django_db
 
 
-LOGIN_URL = "/api/token/"
+LOGIN_URL = "/api/users/token/"
 TEST_PASSWORD = make_test_password()
 
 
