@@ -243,3 +243,31 @@ def test_report_not_found(client, admin_user):
     )
 
     assert response.status_code == 404
+
+
+def test_report_list_my_reports_filter(client, citizen_user, report_factory):
+    # Create a report by this citizen
+    my_report = report_factory(created_by=citizen_user, title="My citizen report")
+
+    # Create another report by another user
+    other_user = citizen_user.__class__.objects.create_user(
+        username="other_citizen", password=TEST_PASSWORD, role="CITIZEN"
+    )
+    other_report = report_factory(created_by=other_user, title="Other report")
+
+    client.force_authenticate(user=citizen_user)
+
+    # Get all reports
+    response_all = client.get("/api/reports/all/")
+    assert response_all.status_code == 200
+    results_all = [r["id"] for r in response_all.data["results"]]
+    assert my_report.id in results_all
+    assert other_report.id in results_all
+
+    # Get only my reports
+    response_my = client.get("/api/reports/all/?my_reports=true")
+    assert response_my.status_code == 200
+    results_my = [r["id"] for r in response_my.data["results"]]
+    assert my_report.id in results_my
+    assert other_report.id not in results_my
+
