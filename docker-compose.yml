@@ -3,9 +3,10 @@ services:
     container_name: web
     build:
       context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8000:8000"
-    command: ["sh", "-c", "./wait-for-it.sh cityops_db:5432 --strict --timeout=60 -- ./start.sh"]
+    command: ["sh", "-c", "./wait-for-it.sh cityops_db:5432 --strict --timeout=60 -- ./start-dev.sh"]
     volumes:
         - .:/app
     env_file:
