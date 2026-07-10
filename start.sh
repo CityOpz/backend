@@ -1,3 +1,7 @@
-python manage.py migrate --no-input
+#!/bin/sh
+set -e
+
+python manage.py migrate
 python manage.py seed_admin
-python manage.py runserver 0.0.0.0:8000
+
+gunicorn cityops.wsgi:application --bind 0.0.0.0:${PORT:-10000}

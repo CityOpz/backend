@@ -30,6 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 CORS_ALLOWED_ORIGINS = [
+    "https://cityops.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
@@ -39,6 +40,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://cityops.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
